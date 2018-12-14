@@ -17,5 +17,11 @@ public class HelloController {
     public String  hello(ModelMap modelMap){
         return "hello";
     }
+
+    @RequestMapping("testError")
+    public String  testError(ModelMap modelMap){
+        //return "hello";
+        throw new IllegalArgumentException();
+    }
 }
 

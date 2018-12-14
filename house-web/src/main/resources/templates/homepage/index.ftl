@@ -104,6 +104,7 @@
                     <a href="/house/list" class="link-arrow">所有房源</a>
                 </header>
                 <div class="row">
+                   <#if recomHouses?? && (recomHouses?size > 0) >
                    <#list recomHouses as house>
                     <div class="col-md-3 col-sm-6">
                         <div class="property">
@@ -140,6 +141,7 @@
                         </div><!-- /.property -->
                     </div><!-- /.col-md-3 -->
                    </#list>
+                   </#if>
                  
                 </div><!-- /.row-->
             </div><!-- /.container-->

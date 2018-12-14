@@ -44,7 +44,7 @@ public class HouseApplicationTests {
 	private UserMapper userMapper;
 	@Test
 	public void testList(){
-		List<User> users = userMapper.queryUsers();
+		List<User> users = userMapper.selectUsers();
 		System.out.println(users.toString());
 	}
 

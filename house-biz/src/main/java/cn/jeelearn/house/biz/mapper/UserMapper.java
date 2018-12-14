@@ -13,6 +13,12 @@ import java.util.List;
  */
 @Mapper
 public interface UserMapper {
-    public List<User> queryUsers();
+    List<User> selectUsers();
+
+    int insert(User account);
+    int update(User account);
+    int delete(String email);
+    List<User> selectUsersByQuery(User user);
+
 }
 
