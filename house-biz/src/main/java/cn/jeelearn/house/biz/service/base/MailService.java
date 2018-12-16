@@ -9,8 +9,11 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
@@ -28,6 +31,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class MailService {
+
+    private final Logger logger = LoggerFactory.getLogger(MailService.class);
 
     @Autowired
     private JavaMailSender mailSender;
@@ -76,7 +81,12 @@ public class MailService {
         message.setTo(email);
         message.setText(content);
         message.setSentDate(new Date());
-        mailSender.send(message);
+        try {
+            mailSender.send(message);
+        } catch (MailException e) {
+            logger.error("send email failed");
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -109,6 +119,27 @@ public class MailService {
         userMapper.update(updateUser);
         registerCache.invalidate(key);
         return true;
+    }
+
+    /**
+     * 发送重置密码邮件
+     *
+     * @param email
+     */
+    @Async
+    public void resetNotify(String email) {
+        String randomKey = RandomStringUtils.randomAlphanumeric(10);
+        resetCache.put(randomKey, email);
+        String content = "http://" + domainName + "/accounts/reset?key=" + randomKey;
+        sendMail("房产平台密码重置邮件", content, email);
+    }
+
+    public String getResetEmail(String key){
+        return resetCache.getIfPresent(key);
+    }
+
+    public void invalidateResetKey(String key){
+        resetCache.invalidate(key);
     }
 }
 

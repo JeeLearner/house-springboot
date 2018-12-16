@@ -36,7 +36,7 @@
                             <input type="password" name="confirmPasswd" class="form-control" id="form-create-account-confirm-password" required>
                         </div>
                         <input type="hidden"  name="email" value="${email!}">
-                        <input type="hidden"  name="key" value="${sucess_key!}">
+                        <input type="hidden"  name="key" value="${success_key!}">
                         <div class="form-group clearfix">
                             <button type="submit" class="btn pull-right btn-default" id="account-submit">确认</button>
                         </div><!-- /.form-group -->

@@ -4,6 +4,7 @@ import cn.jeelearn.house.biz.service.UserService;
 import cn.jeelearn.house.common.constants.CommonConstants;
 import cn.jeelearn.house.common.model.User;
 import cn.jeelearn.house.common.result.ResultMsg;
+import cn.jeelearn.house.common.utils.HashUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -103,10 +104,99 @@ public class UserController {
         return "redirect:/index";
     }
 
+    // ---------------------个人信息页-------------------------
+    /**
+     * 1.能够提供页面信息
+     * 2.更新用户信息
+     * @auther: lyd
+     * @date: 2018/12/14
+     */
+    @RequestMapping("/profile")
+    public String profile(HttpServletRequest request, User updateUser, ModelMap modelMap){
+        if (updateUser.getEmail() == null){
+            return "/user/accounts/profile";
+        }
+        userService.updateUser(updateUser, updateUser.getEmail());
+        User query = new User();
+        query.setEmail(updateUser.getEmail());
+        List<User> users = userService.selectUsersByQuery(query);
+        request.getSession(true).setAttribute(CommonConstants.USER_ATTRIBUTE, users.get(0));
+        return "redirect:/accounts/profile?" + ResultMsg.successMsg("更新成功").asUrlParams();
+    }
+
+    /**
+     * 修改密码
+     * @auther: lyd
+     * @date: 2018/12/14
+     */
+    @RequestMapping("/changePassword")
+    public String changePassword(String email, String password, String newPassword,String confirmPassword){
+        User user = userService.auth(email, password);
+        if(user == null || !confirmPassword.equals(newPassword)){
+            return "redirect:/accounts/profile?" + ResultMsg.errorMsg("密码错误").asUrlParams();
+        }
+        User updateUser = new User();
+        updateUser.setPasswd(HashUtils.encryPassword(newPassword));
+        userService.updateUser(updateUser, email);
+        return "redirect:/accounts/profile?" + ResultMsg.successMsg("更新成功").asUrlParams();
+    }
+
+    /**
+     * 忘记密码
+     * @auther: lyd
+     * @date: 2018/12/14
+     */
+    @RequestMapping("/remember")
+    public String remember(String username, ModelMap modelMap){
+        if (StringUtils.isBlank(username)){
+            return "redirect:/accounts/signin?" + ResultMsg.errorMsg("邮箱不能为空").asUrlParams();
+        }
+        userService.resetNotify(username);
+        modelMap.put("email", username);
+        return "/user/accounts/remember";
+    }
+
+    /**
+     * 密码重置链接响应
+     * @auther: lyd
+     * @date: 2018/12/14
+     */
+    @RequestMapping("/reset")
+    public String reset(String key, ModelMap modelMap){
+        String email = userService.getResetEmail(key);
+        if (StringUtils.isBlank(email)){
+            return "redirect:/accounts/signin?" + ResultMsg.errorMsg("重置链接已过期").asUrlParams();
+        }
+        modelMap.put("email", email);
+        modelMap.put("success_key", key);
+        return "/user/accounts/reset";
+    }
+
+    /**
+     * 密码重置
+     * @auther: lyd
+     * @date: 2018/12/14
+     */
+    @RequestMapping(value="/resetSubmit")
+    public String resetSubmit(HttpServletRequest req,User user){
+        ResultMsg resultMsg = UserHelper.validateResetPassword(user.getKey(), user.getPasswd(), user.getConfirmPasswd());
+        if (!resultMsg.isSuccess()){
+            String suffix = "";
+            if (StringUtils.isNoneBlank(user.getKey())){
+                suffix = "email=" + userService.getResetEmail(user.getKey()) + "&key=" +  user.getKey() + "&";
+            }
+            return "redirect:/accounts/reset?"+ suffix  + resultMsg.asUrlParams();
+        }
+        User updatedUser =  userService.reset(user.getKey(),user.getPasswd());
+        req.getSession(true).setAttribute(CommonConstants.USER_ATTRIBUTE, updatedUser);
+        return "redirect:/index?" + resultMsg.asUrlParams();
+    }
 
 
-
-
+    /**
+     * 项目启动时对框架完整性的测试
+     * @return
+     */
     @RequestMapping("user")
     public List<User> queryUsers(){
         return userService.selectUsers();

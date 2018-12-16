@@ -84,6 +84,70 @@ public class UserService {
         user.setEnable(1);
         List<User> users = userMapper.selectUsersByQuery(user);
         if(users != null && !users.isEmpty()){
+            User u = users.get(0);
+            u.setAvatar(imgPrefix + u.getAvatar());
+            return u;
+        }
+        return null;
+    }
+
+    /**
+     * 根据条件查询用户
+     * @auther: lyd
+     * @date: 2018/12/14
+     */
+    public List<User> selectUsersByQuery(User user){
+        List<User> users = userMapper.selectUsersByQuery(user);
+        users.forEach(u -> {
+            u.setAvatar(imgPrefix + u.getAvatar());
+        });
+        return users;
+    }
+
+    /**
+     * 修改用户
+     * @auther: lyd
+     * @date: 2018/12/14
+     */
+    public void updateUser(User updateUser, String email){
+        updateUser.setEmail(email);
+        BeanHelper.onUpdate(updateUser);
+        userMapper.update(updateUser);
+    }
+
+    public void resetNotify(String username){
+        mailService.resetNotify(username);
+    }
+
+    public String getResetEmail(String key) {
+        String email = "";
+        try {
+            email =  mailService.getResetEmail(key);
+        } catch (Exception ignore) {
+        }
+        return email;
+    }
+
+    /**
+     * 重置密码操作
+     * @auther: lyd
+     * @date: 2018/12/14
+     */
+    public User reset(String key, String password){
+        String email = getResetEmail(key);
+        User updateUser = new User();
+        updateUser.setEmail(email);
+        updateUser.setPasswd(HashUtils.encryPassword(password));
+        userMapper.update(updateUser);
+        mailService.invalidateResetKey(key);
+        return getUserByEmail(email);
+    }
+
+    public User getUserByEmail(String email) {
+        User queryUser = new User();
+        queryUser.setEmail(email);
+        List<User> users = selectUsersByQuery(queryUser);
+        if (!users.isEmpty()) {
             return users.get(0);
         }
         return null;
