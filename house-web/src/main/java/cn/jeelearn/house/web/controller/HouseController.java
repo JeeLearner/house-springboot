@@ -76,6 +76,7 @@ public class HouseController {
         map.put("commentList", comments);
         return "/house/detail";
     }
+    
 
 }
 
