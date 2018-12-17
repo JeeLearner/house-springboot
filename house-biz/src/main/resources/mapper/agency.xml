@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.jeelearn.house.biz.mapper.AgencyMapper">
+
+    <sql id="agencyField">
+          id ,
+		  name,
+		  address,
+		  phone,
+		  email,
+		  about_us,
+		  mobile,
+		  web_site
+    </sql>
+    <select id="select" resultType="agency">
+        SELECT <include refid="agencyField"/>
+        FROM agency
+        <where>
+            <if test="id != null and id != 0">
+                and id = #{id}
+            </if>
+            <if test="name != null and name !='' ">
+                and email = #{email}
+            </if>
+        </where>
+    </select>
+</mapper>

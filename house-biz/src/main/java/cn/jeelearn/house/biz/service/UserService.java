@@ -152,5 +152,17 @@ public class UserService {
         }
         return null;
     }
+
+    public User getUserById(long id) {
+        User queryUser = new User();
+        queryUser.setId(id);
+        List<User> users = selectUsersByQuery(queryUser);
+        if (!users.isEmpty()) {
+            return users.get(0);
+        }
+        return null;
+    }
+
+
 }
 

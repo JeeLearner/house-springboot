@@ -16,10 +16,18 @@
     
     <typeAliases>
        <typeAlias type="cn.jeelearn.house.common.model.User" alias="user" />
+       <typeAlias type="cn.jeelearn.house.common.model.House" alias="house" />
+       <typeAlias type="cn.jeelearn.house.common.model.Community" alias="community" />
+        <typeAlias type="cn.jeelearn.house.common.model.Comment" alias="comment" />
+        <typeAlias type="cn.jeelearn.house.common.model.Agency" alias="agency"/>
+        <typeAlias type="cn.jeelearn.house.common.model.HouseUser" alias="houseUser"/>
     </typeAliases>
     
     <mappers>
        <mapper resource="mapper/user.xml" />
+        <mapper resource="mapper/house.xml" />
+        <mapper resource="mapper/comment.xml" />
+        <mapper resource="mapper/agency.xml" />
     </mappers>
 
 </configuration>
