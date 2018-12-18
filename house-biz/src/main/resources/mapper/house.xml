@@ -22,7 +22,7 @@
           </if>
           <if test="house.ids != null and house.ids.size() > 0">
               and a.id IN
-              <foreach collection="house.ids" item="iteem" index="index"
+              <foreach collection="house.ids" item="item" index="index"
                        open="(" close=")" separator=",">
                   #{item}
               </foreach>
@@ -80,6 +80,23 @@
         WHERE house_id = #{houseId} AND type = 1
         limit 1
     </select>
+
+    <insert id="insertUserMsg">
+        INSERT INTO house_msg (
+                     msg,
+                     create_time,
+                     user_name,
+                     house_id,
+                     agent_id
+                     )
+                     value(
+                      #{msg},
+                      #{createTime},
+                      #{userName},
+                      #{houseId},
+                      #{agentId}
+                     )
+    </insert>
 
 
 </mapper>

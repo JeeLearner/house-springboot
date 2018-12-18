@@ -3,6 +3,7 @@ package cn.jeelearn.house.biz.mapper;
 import cn.jeelearn.house.common.model.Community;
 import cn.jeelearn.house.common.model.House;
 import cn.jeelearn.house.common.model.HouseUser;
+import cn.jeelearn.house.common.model.UserMsg;
 import cn.jeelearn.house.common.page.PageParams;
 import com.google.common.collect.Lists;
 import org.apache.ibatis.annotations.Mapper;
@@ -20,4 +21,6 @@ public interface HouseMapper {
     List<Community> selectCommunity(Community community);
 
     public HouseUser selectSaleHouseUser(@Param("houseId") Long houseId);
+
+    void insertUserMsg(UserMsg userMsg);
 }

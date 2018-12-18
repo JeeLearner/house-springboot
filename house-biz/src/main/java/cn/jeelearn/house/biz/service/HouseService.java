@@ -1,11 +1,11 @@
 package cn.jeelearn.house.biz.service;
 
 import cn.jeelearn.house.biz.mapper.HouseMapper;
-import cn.jeelearn.house.common.model.Community;
-import cn.jeelearn.house.common.model.House;
-import cn.jeelearn.house.common.model.HouseUser;
+import cn.jeelearn.house.biz.service.base.MailService;
+import cn.jeelearn.house.common.model.*;
 import cn.jeelearn.house.common.page.PageData;
 import cn.jeelearn.house.common.page.PageParams;
+import cn.jeelearn.house.common.utils.BeanHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +27,10 @@ public class HouseService {
 
     @Autowired
     private HouseMapper houseMapper;
+    @Autowired
+    private AgencyService agencyService;
+    @Autowired
+    private MailService mailService;
 
     @Value("${file.prefix}")
     private String imgPrefix;
@@ -53,7 +57,7 @@ public class HouseService {
         return PageData.buildPage(houses, count, pageParams.getPageSize(), pageParams.getPageNum());
     }
 
-    private List<House> queryAndSetImg(House query, PageParams pageParams){
+    public List<House> queryAndSetImg(House query, PageParams pageParams){
         List<House> houses = houseMapper.selectPageHouses(query, pageParams);
         houses.forEach(h -> {
             h.setFirstImg(imgPrefix + h.getFirstImg());
@@ -78,5 +82,15 @@ public class HouseService {
         return houseUser;
     }
 
+    /**
+     * 留言
+     * @param userMsg
+     */
+    public void addUserMsg(UserMsg userMsg) {
+        BeanHelper.onInsert(userMsg);
+        houseMapper.insertUserMsg(userMsg);
+        User agent = agencyService.getAgentDetail(userMsg.getAgentId());
+        mailService.sendMail("来自用户"+userMsg.getEmail()+"的留言", userMsg.getMsg(), agent.getEmail());
+    }
 }
 

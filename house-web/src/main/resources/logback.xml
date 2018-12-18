@@ -95,7 +95,7 @@
 	
 
 
-     <logger name="com.mooc.house.mapper" level="DEBUG" additivity="false" >
+     <logger name="cn.jeelearn.house.biz.mapper" level="DEBUG" additivity="false" >
          <appender-ref ref="FILE-DEBUG" />
          <appender-ref ref="CONSOLE" />
      </logger>

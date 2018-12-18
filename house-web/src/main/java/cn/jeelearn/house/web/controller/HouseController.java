@@ -3,11 +3,15 @@ package cn.jeelearn.house.web.controller;
 import cn.jeelearn.house.biz.service.AgencyService;
 import cn.jeelearn.house.biz.service.CommentService;
 import cn.jeelearn.house.biz.service.HouseService;
+import cn.jeelearn.house.biz.service.RecommendService;
+import cn.jeelearn.house.common.constants.CommonConstants;
 import cn.jeelearn.house.common.model.Comment;
 import cn.jeelearn.house.common.model.House;
 import cn.jeelearn.house.common.model.HouseUser;
+import cn.jeelearn.house.common.model.UserMsg;
 import cn.jeelearn.house.common.page.PageData;
 import cn.jeelearn.house.common.page.PageParams;
+import cn.jeelearn.house.common.result.ResultMsg;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -37,6 +41,8 @@ public class HouseController {
     private CommentService commentService;
     @Autowired
     private AgencyService agencyService;
+    @Autowired
+    private RecommendService recommendService;
 
     /**
      * 1.实现分页
@@ -50,7 +56,9 @@ public class HouseController {
     public String list(Integer pageSize, Integer pageNum, House query, ModelMap map){
         //房源列表
         PageData<House> housePageData = houseService.selectPageHouses(query, PageParams.build(pageSize, pageNum));
-
+        //热门房源
+        List<House> hotHouses =  recommendService.getHotHouse(CommonConstants.RECOM_SIZE);
+        map.put("recomHouses", hotHouses);
         map.put("ps", housePageData);
         map.put("vo", query);
         return "house/listing";
@@ -61,7 +69,7 @@ public class HouseController {
      * @auther: lyd
      * @date: 2018/12/17
      */
-    @RequestMapping("detail")
+    @RequestMapping("/detail")
     public String detail(long id, ModelMap map){
         //房屋详情
         House house = houseService.selectOneHouse(id);
@@ -72,9 +80,25 @@ public class HouseController {
         if (houseUser.getUserId() != null && !houseUser.getUserId().equals(0)){
             map.put("agent", agencyService.getAgentDetail(houseUser.getUserId()));
         }
+        //热门房产
+        List<House> rcHouses =  recommendService.getHotHouse(CommonConstants.RECOM_SIZE);
+        map.put("recomHouses", rcHouses);
+        //*****点击一次加1
+        recommendService.increase(id);
         map.put("house", house);
         map.put("commentList", comments);
         return "/house/detail";
+    }
+
+    /**
+     * 留言
+     * @auther: lyd
+     * @date: 2018/12/18
+     */
+    @RequestMapping("/leaveMsg")
+    public String houseMsg(UserMsg userMsg){
+        houseService.addUserMsg(userMsg);
+        return "redirect:/house/detail?id=" + userMsg.getHouseId() + "&" + ResultMsg.successMsg("留言成功").asUrlParams();
     }
     
 

@@ -12,6 +12,7 @@
 		  mobile,
 		  web_site
     </sql>
+
     <select id="select" resultType="agency">
         SELECT <include refid="agencyField"/>
         FROM agency
@@ -21,6 +22,55 @@
             </if>
             <if test="name != null and name !='' ">
                 and email = #{email}
+            </if>
+        </where>
+    </select>
+
+
+    <sql id="agentField">
+        id,
+        name,
+        phone,
+        email,
+        aboutme,
+        passwd,
+        avatar,
+        type,
+        create_time,
+        enable,
+        agency_id
+    </sql>
+    <select id="selectAgent" resultType="user">
+        SELECT <include refid="agentField"/>
+        FROM USER
+        <where>
+            enable = 1 and type = 2
+            <if test="user.id != null and user.id != 0">
+                and id = #{user.id}
+            </if>
+            <if test="user.name !=null and user.name != ''">
+                and email = #{user.email}
+            </if>
+        </where>
+        order by id desc
+        <if test='pageParams.offset != null and pageParams.limit != null'>
+            limit #{pageParams.offset}, #{pageParams.limit}
+        </if>
+        <if test='pageParams.offset == null and pageParams.limit != null'>
+            limit #{pageParams.limit}
+        </if>
+    </select>
+
+    <select id="selectAgentCount" resultType="long">
+        select count(id)
+        from user
+        <where>
+            enable =1 and type =2
+            <if test ="user.id != null and user.id !=0">
+                and id = #{user.id}
+            </if>
+            <if test="user.name !=null and user.name != ''">
+                and email = #{user.email}
             </if>
         </where>
     </select>
