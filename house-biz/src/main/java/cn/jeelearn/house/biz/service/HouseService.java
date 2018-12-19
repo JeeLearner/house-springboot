@@ -1,13 +1,19 @@
 package cn.jeelearn.house.biz.service;
 
 import cn.jeelearn.house.biz.mapper.HouseMapper;
+import cn.jeelearn.house.biz.service.base.FileService;
 import cn.jeelearn.house.biz.service.base.MailService;
+import cn.jeelearn.house.common.constants.HouseUserType;
 import cn.jeelearn.house.common.model.*;
 import cn.jeelearn.house.common.page.PageData;
 import cn.jeelearn.house.common.page.PageParams;
 import cn.jeelearn.house.common.utils.BeanHelper;
+
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +37,8 @@ public class HouseService {
     private AgencyService agencyService;
     @Autowired
     private MailService mailService;
+    @Autowired
+    private FileService fileService;
 
     @Value("${file.prefix}")
     private String imgPrefix;
@@ -67,6 +75,11 @@ public class HouseService {
         return houses;
     }
 
+    /**
+     * 通过houseId查询房产
+     * @param id
+     * @return
+     */
     public House selectOneHouse(long id){
         House house = new House();
         house.setId(id);
@@ -92,5 +105,67 @@ public class HouseService {
         User agent = agencyService.getAgentDetail(userMsg.getAgentId());
         mailService.sendMail("来自用户"+userMsg.getEmail()+"的留言", userMsg.getMsg(), agent.getEmail());
     }
+
+    /**
+     * 查询所有小区
+     * @return
+     */
+	public List<Community> getAllCommunitys() {
+		Community community = new Community();
+		return houseMapper.selectCommunity(community);
+	}
+
+	/**添加房产
+	 *   添加房屋图片
+	 *   添加户型图片
+	 *   插入房产信息
+	 *   绑定用户到房产的关系
+	 * @param house
+	 * @param user
+	 */
+	public void addHouse(House house, User user) {
+		if(CollectionUtils.isNotEmpty(house.getHouseFiles())){
+			String images = Joiner.on(",").join(fileService.getImgPaths(house.getHouseFiles()));
+			house.setImages(images);
+		}
+		if (CollectionUtils.isNotEmpty(house.getFloorPlanFiles())) {
+			String images = Joiner.on(",").join(fileService.getImgPaths(house.getFloorPlanFiles()));
+		    house.setFloorPlan(images);
+		}
+		BeanHelper.onInsert(house);
+		houseMapper.insert(house);
+		bindUser2House(house.getId(),user.getId(),false);
+	}
+
+	private void bindUser2House(Long houseId, Long userId, boolean collect) {
+		HouseUser existHouseUser = houseMapper.selectHouseUser(userId, houseId, collect ? HouseUserType.BOOKMARK.value : HouseUserType.SALE.value);
+		if(existHouseUser != null ) {
+			return;
+		}
+		HouseUser houseUser = new HouseUser();
+		  houseUser.setHouseId(houseId);
+		  houseUser.setUserId(userId);
+		  houseUser.setType(collect ? HouseUserType.BOOKMARK.value : HouseUserType.SALE.value);
+		  BeanHelper.setDefaultProp(houseUser, HouseUser.class);
+		  BeanHelper.onInsert(houseUser);
+		  houseMapper.insertHouseUser(houseUser);
+	}
+
+	/**
+	 * 删除房产
+	 * 		出售的房产－－》下架
+	 * 		收藏的房产－－》删除房产和用户的关系
+	 * @param id
+	 * @param userId
+	 * @param type
+	 */
+	public void unbindUser2House(Long id, Long userId, Integer type) {
+		  if (type.equals(HouseUserType.SALE.value)) {
+		      houseMapper.downHouse(id);
+		  }else {
+		      houseMapper.deleteHouseUser(id, userId, type);
+		  }
+		    
+	}
 }
 

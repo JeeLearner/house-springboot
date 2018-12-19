@@ -60,7 +60,7 @@
                                         <dt>价格</dt>
                                             <dd><span class="tag price">${house.priceStr}</span></dd>
                                         <dt>类型:</dt>
-                                            <dd>销售</dd>
+                                            <dd>销售（假数据）</dd>
                                         <dt>面积:</dt>
                                             <dd>${house.area} m<sup>2</sup></dd>
                                         <dt>卧室:</dt>

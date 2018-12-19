@@ -15,5 +15,7 @@ public class CommonConstants {
     //热门房源显示条数
     public static final Integer RECOM_SIZE = 3;
 
+	public static final Integer HOUSE_STATE_UP = 1;
+
 }
 

@@ -1,17 +1,22 @@
 package cn.jeelearn.house.web.controller;
 
 import cn.jeelearn.house.biz.service.AgencyService;
+import cn.jeelearn.house.biz.service.CityService;
 import cn.jeelearn.house.biz.service.CommentService;
 import cn.jeelearn.house.biz.service.HouseService;
 import cn.jeelearn.house.biz.service.RecommendService;
 import cn.jeelearn.house.common.constants.CommonConstants;
+import cn.jeelearn.house.common.constants.HouseUserType;
 import cn.jeelearn.house.common.model.Comment;
 import cn.jeelearn.house.common.model.House;
 import cn.jeelearn.house.common.model.HouseUser;
+import cn.jeelearn.house.common.model.User;
 import cn.jeelearn.house.common.model.UserMsg;
 import cn.jeelearn.house.common.page.PageData;
 import cn.jeelearn.house.common.page.PageParams;
 import cn.jeelearn.house.common.result.ResultMsg;
+import cn.jeelearn.house.web.interceptor.UserContext;
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -43,6 +48,8 @@ public class HouseController {
     private AgencyService agencyService;
     @Autowired
     private RecommendService recommendService;
+    @Autowired
+    private CityService cityService;
 
     /**
      * 1.实现分页
@@ -101,6 +108,57 @@ public class HouseController {
         return "redirect:/house/detail?id=" + userMsg.getHouseId() + "&" + ResultMsg.successMsg("留言成功").asUrlParams();
     }
     
+    @RequestMapping("/toAdd")
+	public String toAdd(ModelMap modelMap) {
+		modelMap.put("citys", cityService.getAllCitys());
+		modelMap.put("communitys", houseService.getAllCommunitys());
+		return "/house/add";
+	}
+    
+    /**
+     * 添加房产
+     * @param house
+     * @return
+     */
+    @RequestMapping("/add")
+	public String doAdd(House house){
+		User user = UserContext.getUser();
+		house.setState(CommonConstants.HOUSE_STATE_UP);
+		houseService.addHouse(house,user);
+		return "redirect:/house/ownlist";
+	}
+    
+    /**
+     * 展示个人房产列表
+     * @param house
+     * @param pageNum
+     * @param pageSize
+     * @param modelMap
+     * @return
+     */
+	@RequestMapping("/ownlist")
+	public String ownlist(House house,Integer pageNum,Integer pageSize,ModelMap modelMap){
+		User user = UserContext.getUser();
+		house.setUserId(user.getId());
+		house.setBookmarked(false);
+		modelMap.put("ps", houseService.selectPageHouses(house, PageParams.build(pageSize, pageNum)));
+		//pageType=own表示我的房产列表，另外还有房产收藏
+		modelMap.put("pageType", "own");
+		return "/house/ownlist";
+	}
+	
+	/**
+	 * 删除房产
+	 * @param id
+	 * @param pageType
+	 * @return
+	 */
+	@RequestMapping(value="/del")
+	public String delsale(Long id,String pageType){
+	   User user = UserContext.getUser();
+	   houseService.unbindUser2House(id,user.getId(),pageType.equals("own")?HouseUserType.SALE.value:HouseUserType.BOOKMARK.value);
+	   return "redirect:/house/ownlist";
+	}
 
 }
 
