@@ -32,7 +32,9 @@ public interface HouseMapper {
 
 	int downHouse(Long id);
 
-	int deleteHouseUser(Long id, Long userId, Integer type);
+	int deleteHouseUser(@Param("id")Long id,@Param("userId") Long userId,@Param("type") Integer value);
+
+	int updateHouse(House updateHouse);
 	
 	
 }

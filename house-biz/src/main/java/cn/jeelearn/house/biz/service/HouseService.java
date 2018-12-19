@@ -137,18 +137,18 @@ public class HouseService {
 		bindUser2House(house.getId(),user.getId(),false);
 	}
 
-	private void bindUser2House(Long houseId, Long userId, boolean collect) {
+	public void bindUser2House(Long houseId, Long userId, boolean collect) {
 		HouseUser existHouseUser = houseMapper.selectHouseUser(userId, houseId, collect ? HouseUserType.BOOKMARK.value : HouseUserType.SALE.value);
 		if(existHouseUser != null ) {
 			return;
 		}
 		HouseUser houseUser = new HouseUser();
-		  houseUser.setHouseId(houseId);
-		  houseUser.setUserId(userId);
-		  houseUser.setType(collect ? HouseUserType.BOOKMARK.value : HouseUserType.SALE.value);
-		  BeanHelper.setDefaultProp(houseUser, HouseUser.class);
-		  BeanHelper.onInsert(houseUser);
-		  houseMapper.insertHouseUser(houseUser);
+		houseUser.setHouseId(houseId);
+		houseUser.setUserId(userId);
+		houseUser.setType(collect ? HouseUserType.BOOKMARK.value : HouseUserType.SALE.value);
+		BeanHelper.setDefaultProp(houseUser, HouseUser.class);
+		BeanHelper.onInsert(houseUser);
+		houseMapper.insertHouseUser(houseUser);
 	}
 
 	/**
@@ -166,6 +166,17 @@ public class HouseService {
 		      houseMapper.deleteHouseUser(id, userId, type);
 		  }
 		    
+	}
+
+	public void updateRating(Long id, Double rating) {
+		House house = selectOneHouse(id);
+		Double oldRating = house.getRating();
+		Double newRating  = oldRating.equals(0D)? rating : Math.min((oldRating+rating)/2, 5);
+		House updateHouse = new House();
+		updateHouse.setId(id);
+		updateHouse.setRating(newRating);
+		BeanHelper.onUpdate(updateHouse);
+		houseMapper.updateHouse(updateHouse);
 	}
 }
 

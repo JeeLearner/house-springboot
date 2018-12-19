@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -158,6 +159,60 @@ public class HouseController {
 	   User user = UserContext.getUser();
 	   houseService.unbindUser2House(id,user.getId(),pageType.equals("own")?HouseUserType.SALE.value:HouseUserType.BOOKMARK.value);
 	   return "redirect:/house/ownlist";
+	}
+	
+	/**
+	 * 评分
+	 * @param rating
+	 * @param id
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/rating")
+	public ResultMsg houseRate(Double rating,Long id){
+		houseService.updateRating(id,rating);
+		return ResultMsg.successMsg("ok");
+	}
+	
+	/**
+	 * 收藏
+	 * @param id
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/bookmark")
+	public ResultMsg bookmark(Long id){
+	  User user =	UserContext.getUser();
+	  houseService.bindUser2House(id, user.getId(), true);
+	  return ResultMsg.successMsg("ok");
+	}
+	
+	/**
+	 * 取消收藏
+	 * @param id
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/unbookmark")
+	public ResultMsg unbookmark(Long id){
+	  User user =	UserContext.getUser();
+	  houseService.unbindUser2House(id,user.getId(),HouseUserType.BOOKMARK.value);
+	  return ResultMsg.successMsg("ok");
+	}
+	
+	/**
+	 * 收藏列表
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/bookmarked")
+	public String bookmarked(House house,Integer pageNum,Integer pageSize,ModelMap modelMap){
+		User user = UserContext.getUser();
+		house.setBookmarked(true);
+		house.setUserId(user.getId());
+		modelMap.put("ps", houseService.selectPageHouses(house, PageParams.build(pageSize, pageNum)));
+		modelMap.put("pageType", "book");
+		return "/house/ownlist";
 	}
 
 }

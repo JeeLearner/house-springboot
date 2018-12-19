@@ -152,4 +152,10 @@
       		and user_id = #{userId} 
       		and type=#{type}
     </delete>
+    
+    <update id="updateHouse">
+      update house
+      set  rating = #{rating}
+      where id = #{id}
+   </update>
 </mapper>
